@@ -2,5 +2,8 @@
     "require": {
         "google/cloud-bigtable": "^1.0.0",
         "psr/cache": "^1.0"
+    },
+    "require-dev": {
+        "spatie/phpunit-snapshot-assertions": "^3.0"
     }
 }
