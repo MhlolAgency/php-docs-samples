@@ -122,13 +122,29 @@ final class ReadTest extends TestCase
             "readRow"
         ]);
 
-        $result = sprintf('Reading data for phone#4c410523#20190501
+        $result = sprintf('Reading data for row
 Column Family stats_summary
 	connected_cell: 1 @%1$s
 	connected_wifi: 1 @%1$s
 	os_build: PQ2A.190405.003 @%1$s', self::$timestamp);
 
-        $this->assertContains($result, $output);
+        $this->assertEquals($result, trim($output));
+    }
+
+    public function testReadRowPartial()
+    {
+        $output = self::runSnippet('read_snippets', [
+            self::$projectId,
+            self::$instanceId,
+            self::$tableId,
+            "readRowPartial"
+        ]);
+
+        $result = sprintf('Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190405.003 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
     }
 
     public function testReadRows()
@@ -140,12 +156,164 @@ Column Family stats_summary
             "readRows"
         ]);
 
-        $result = sprintf('Reading data for phone#4c410523#20190501
+        $result = sprintf('Reading data for row
 Column Family stats_summary
 	connected_cell: 1 @%1$s
 	connected_wifi: 1 @%1$s
-	os_build: PQ2A.190405.003 @%1$s', self::$timestamp);
+	os_build: PQ2A.190405.003 @%1$s
 
-        $this->assertContains($result, $output);
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.004 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
+    }
+
+    public function testReadRowRange()
+    {
+        $output = self::runSnippet('read_snippets', [
+            self::$projectId,
+            self::$instanceId,
+            self::$tableId,
+            "readRowRange"
+        ]);
+
+        $result = sprintf('Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.003 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.004 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 0 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190406.000 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
+    }
+
+    public function testReadRowRanges()
+    {
+        $output = self::runSnippet('read_snippets', [
+            self::$projectId,
+            self::$instanceId,
+            self::$tableId,
+            "readRowRanges"
+        ]);
+
+        $result = sprintf('Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.003 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.004 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 0 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190406.000 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190401.002 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 0 @%1$s
+	os_build: PQ2A.190406.000 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
+    }
+
+    public function testReadPrefix()
+    {
+        $output = self::runSnippet('read_snippets', [
+            self::$projectId,
+            self::$instanceId,
+            self::$tableId,
+            "readPrefix"
+        ]);
+
+        $result = sprintf('Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.003 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190405.004 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 0 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190406.000 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 1 @%1$s
+	os_build: PQ2A.190401.002 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	connected_cell: 1 @%1$s
+	connected_wifi: 0 @%1$s
+	os_build: PQ2A.190406.000 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
+    }
+
+    public function testReadFilter()
+    {
+        $output = self::runSnippet('read_snippets', [
+            self::$projectId,
+            self::$instanceId,
+            self::$tableId,
+            "readFilter"
+        ]);
+
+        $result = sprintf('Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190405.003 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190405.004 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190406.000 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190401.002 @%1$s
+
+Reading data for row
+Column Family stats_summary
+	os_build: PQ2A.190406.000 @%1$s', self::$timestamp);
+
+        $this->assertEquals($result, trim($output));
     }
 }

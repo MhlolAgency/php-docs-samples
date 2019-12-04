@@ -28,12 +28,18 @@ require_once __DIR__ . '/../vendor/autoload.php';
 if (count($argv) !== 5) {
     return printf("Usage: php %s PROJECT_ID INSTANCE_ID TABLE_ID" . PHP_EOL, __FILE__);
 }
-list($_, $project_id, $instance_id, $table_id, $snippet) = $argv;
+list($_, $project_id, $instance_id, $table_id, $readType) = $argv;
 
-// [START bigtable_writes_simple]
+// [START bigtable_reads_row]
+// [START bigtable_reads_row_partial]
+// [START bigtable_reads_rows]
+// [START bigtable_reads_row_range]
+// [START bigtable_reads_row_ranges]
+// [START bigtable_reads_prefix]
+// [START bigtable_reads_filter]
 
 use Google\Cloud\Bigtable\BigtableClient;
-use Google\Cloud\Bigtable\DataUtil;
+use Google\Cloud\Bigtable\Filter;
 
 /** Uncomment and populate these variables in your code */
 // $project_id = 'The Google project ID';
@@ -46,51 +52,125 @@ $dataClient = new BigtableClient([
 ]);
 $table = $dataClient->table($instance_id, $table_id);
 
-function readRow($table)
-{
-    $rowkey = "phone#4c410523#20190501";
-    $row = $table->readRow($rowkey);
+if (!function_exists('printRow')) {
+    function printRow($row_data)
+    {
+        print("Reading data for row" . PHP_EOL);
+        foreach ($row_data as $family => $cols) {
+            printf("Column Family %s" . PHP_EOL, $family);
+            foreach ($cols as $col => $data) {
+                $labels = "";
+                for ($i = 0; $i < count($data); $i++) {
+                    printf("\t%s: %s @%s%s" . PHP_EOL, $col, $data[$i]["value"], $data[$i]["timeStamp"], $labels);
 
-    printRow($rowkey, $row);
-}
-
-function readRows($table)
-{
-    $rowkey = "phone#4c410523#20190501";
-//    $rows = $table->readRows([$rowkey, "phone#4c410523#20190502"]);
-    $rows = $table->readRows([
-        'rowRanges' => [
-            [
-                'startKeyOpen' => 'phone#4',
-                'endKeyOpen' => 'phone#6'
-            ]
-        ]
-    ]);
-
-    foreach ($rows as $row) {
-        print_r($row) . PHP_EOL;
-    }
-}
-
-
-
-function printRow($rowkey, $row_data)
-{
-    printf("Reading data for %s" . PHP_EOL, $rowkey);
-    foreach ($row_data as $family => $cols) {
-        printf("Column Family %s" . PHP_EOL, $family);
-        foreach ($cols as $col => $data) {
-            $labels = "";
-            for ($i = 0; $i < count($data); $i++) {
-                printf("\t%s: %s @%s%s" . PHP_EOL, $col, $data[$i]["value"], $data[$i]["timeStamp"], $labels);
-
+                }
             }
         }
+        print (PHP_EOL);
     }
-    print (PHP_EOL);
 }
 
+// [END bigtable_reads_row]
+// [END bigtable_reads_row_partial]
+// [END bigtable_reads_rows]
+// [END bigtable_reads_row_range]
+// [END bigtable_reads_row_ranges]
+// [END bigtable_reads_prefix]
+// [END bigtable_reads_filter]
 
-call_user_func($snippet, $table);
 
-// [END bigtable_writes_simple]
+switch ($readType) {
+    case "readRow":
+        // [START bigtable_reads_row]
+        $rowkey = "phone#4c410523#20190501";
+        $row = $table->readRow($rowkey);
+
+        printRow($row);
+        // [END bigtable_reads_row]
+        break;
+    case "readRowPartial":
+        // [START bigtable_reads_row_partial]
+        $rowkey = "phone#4c410523#20190501";
+        $rowFilter = Filter::qualifier()->exactMatch("os_build");
+        $row = $table->readRow($rowkey, ['filter' => $rowFilter]);
+
+        printRow($row);
+        // [END bigtable_reads_row_partial]
+        break;
+    case "readRows":
+        // [START bigtable_reads_rows]
+        $rows = $table->readRows(
+            ["rowKeys" => ["phone#4c410523#20190501", "phone#4c410523#20190502"]]
+        );
+
+        foreach ($rows as $row) {
+            printRow($row);
+        }
+        // [END bigtable_reads_rows]
+        break;
+    case "readRowRange":
+        // [START bigtable_reads_row_range]
+        $rows = $table->readRows([
+            'rowRanges' => [
+                [
+                    'startKeyClosed' => 'phone#4c410523#20190501',
+                    'endKeyOpen' => 'phone#4c410523#201906201'
+                ]
+            ]
+        ]);
+
+        foreach ($rows as $row) {
+            printRow($row);
+        }
+        // [END bigtable_reads_row_range]
+        break;
+    case "readRowRanges":
+        // [START bigtable_reads_row_ranges]
+        $rows = $table->readRows([
+            'rowRanges' => [
+                [
+                    'startKeyClosed' => 'phone#4c410523#20190501',
+                    'endKeyOpen' => 'phone#4c410523#201906201'
+                ],
+                [
+                    'startKeyClosed' => 'phone#5c10102#20190501',
+                    'endKeyOpen' => 'phone#5c10102#201906201'
+                ]
+            ]
+        ]);
+
+        foreach ($rows as $row) {
+            print_r($row);
+            printRow($row);
+        }
+        // [END bigtable_reads_row_ranges]
+        break;
+    case "readPrefix":
+        // [START bigtable_reads_prefix]
+        $rows = $table->readRows([
+            'rowRanges' => [
+                [
+                    'startKeyClosed' => 'phone#4c410523',
+                ]
+            ]
+        ]);
+
+        foreach ($rows as $row) {
+            printRow($row);
+        }
+        // [END bigtable_reads_prefix]
+        break;
+    case "readFilter":
+        // [START bigtable_reads_filter]
+        $rowFilter = Filter::value()->regex('PQ2A.*$');
+
+        $rows = $table->readRows([
+            'filter' => $rowFilter
+        ]);
+
+        foreach ($rows as $row) {
+            printRow($row);
+        }
+        // [END bigtable_reads_filter]
+        break;
+}
