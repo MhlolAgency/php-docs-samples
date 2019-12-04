@@ -26,7 +26,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 if (count($argv) !== 5) {
-    return printf("Usage: php %s PROJECT_ID INSTANCE_ID TABLE_ID" . PHP_EOL, __FILE__);
+    return printf("Usage: php %s PROJECT_ID INSTANCE_ID TABLE_ID READ_TYPE" . PHP_EOL, __FILE__);
 }
 list($_, $project_id, $instance_id, $table_id, $readType) = $argv;
 
@@ -52,22 +52,20 @@ $dataClient = new BigtableClient([
 ]);
 $table = $dataClient->table($instance_id, $table_id);
 
-if (!function_exists('printRow')) {
-    function printRow($row_data)
-    {
-        print("Reading data for row" . PHP_EOL);
-        foreach ($row_data as $family => $cols) {
-            printf("Column Family %s" . PHP_EOL, $family);
-            foreach ($cols as $col => $data) {
-                $labels = "";
-                for ($i = 0; $i < count($data); $i++) {
-                    printf("\t%s: %s @%s%s" . PHP_EOL, $col, $data[$i]["value"], $data[$i]["timeStamp"], $labels);
-
-                }
+// Helper function for printing the row data
+function print_row($row)
+{
+    print('Reading data for row' . PHP_EOL);
+    foreach ((array) $row as $family => $cols) {
+        printf('Column Family %s' . PHP_EOL, $family);
+        foreach ($cols as $col => $data) {
+            for ($i = 0; $i < count($data); $i++) {
+                printf("\t%s: %s @%s" . PHP_EOL,
+                    $col, $data[$i]['value'], $data[$i]['timeStamp']);
             }
         }
-        print (PHP_EOL);
     }
+    print(PHP_EOL);
 }
 
 // [END bigtable_reads_row]
@@ -78,99 +76,115 @@ if (!function_exists('printRow')) {
 // [END bigtable_reads_prefix]
 // [END bigtable_reads_filter]
 
+function bigtable_read_row($table)
+{
+    // [START bigtable_reads_row]
+    $rowkey = "phone#4c410523#20190501";
+    $row = $table->readRow($rowkey);
 
-switch ($readType) {
-    case "readRow":
-        // [START bigtable_reads_row]
-        $rowkey = "phone#4c410523#20190501";
-        $row = $table->readRow($rowkey);
-
-        printRow($row);
-        // [END bigtable_reads_row]
-        break;
-    case "readRowPartial":
-        // [START bigtable_reads_row_partial]
-        $rowkey = "phone#4c410523#20190501";
-        $rowFilter = Filter::qualifier()->exactMatch("os_build");
-        $row = $table->readRow($rowkey, ['filter' => $rowFilter]);
-
-        printRow($row);
-        // [END bigtable_reads_row_partial]
-        break;
-    case "readRows":
-        // [START bigtable_reads_rows]
-        $rows = $table->readRows(
-            ["rowKeys" => ["phone#4c410523#20190501", "phone#4c410523#20190502"]]
-        );
-
-        foreach ($rows as $row) {
-            printRow($row);
-        }
-        // [END bigtable_reads_rows]
-        break;
-    case "readRowRange":
-        // [START bigtable_reads_row_range]
-        $rows = $table->readRows([
-            'rowRanges' => [
-                [
-                    'startKeyClosed' => 'phone#4c410523#20190501',
-                    'endKeyOpen' => 'phone#4c410523#201906201'
-                ]
-            ]
-        ]);
-
-        foreach ($rows as $row) {
-            printRow($row);
-        }
-        // [END bigtable_reads_row_range]
-        break;
-    case "readRowRanges":
-        // [START bigtable_reads_row_ranges]
-        $rows = $table->readRows([
-            'rowRanges' => [
-                [
-                    'startKeyClosed' => 'phone#4c410523#20190501',
-                    'endKeyOpen' => 'phone#4c410523#201906201'
-                ],
-                [
-                    'startKeyClosed' => 'phone#5c10102#20190501',
-                    'endKeyOpen' => 'phone#5c10102#201906201'
-                ]
-            ]
-        ]);
-
-        foreach ($rows as $row) {
-            print_r($row);
-            printRow($row);
-        }
-        // [END bigtable_reads_row_ranges]
-        break;
-    case "readPrefix":
-        // [START bigtable_reads_prefix]
-        $rows = $table->readRows([
-            'rowRanges' => [
-                [
-                    'startKeyClosed' => 'phone#4c410523',
-                ]
-            ]
-        ]);
-
-        foreach ($rows as $row) {
-            printRow($row);
-        }
-        // [END bigtable_reads_prefix]
-        break;
-    case "readFilter":
-        // [START bigtable_reads_filter]
-        $rowFilter = Filter::value()->regex('PQ2A.*$');
-
-        $rows = $table->readRows([
-            'filter' => $rowFilter
-        ]);
-
-        foreach ($rows as $row) {
-            printRow($row);
-        }
-        // [END bigtable_reads_filter]
-        break;
+    print_row($row);
+    // [END bigtable_reads_row]
 }
+
+function bigtable_read_row_partial($table)
+{
+    // [START bigtable_reads_row_partial]
+    $rowkey = "phone#4c410523#20190501";
+    $rowFilter = Filter::qualifier()->exactMatch("os_build");
+    $row = $table->readRow($rowkey, ['filter' => $rowFilter]);
+
+    print_row($row);
+    // [END bigtable_reads_row_partial]
+}
+
+function bigtable_read_rows($table)
+{
+    // [START bigtable_reads_rows]
+    $rows = $table->readRows(
+        ["rowKeys" => ["phone#4c410523#20190501", "phone#4c410523#20190502"]]
+    );
+
+    foreach ($rows as $row) {
+        print_row($row);
+    }
+    // [END bigtable_reads_rows]
+}
+
+function bigtable_read_row_range($table)
+{
+    // [START bigtable_reads_row_range]
+    $rows = $table->readRows([
+        'rowRanges' => [
+            [
+                'startKeyClosed' => 'phone#4c410523#20190501',
+                'endKeyOpen' => 'phone#4c410523#201906201'
+            ]
+        ]
+    ]);
+
+    foreach ($rows as $row) {
+        print_row($row);
+    }
+    // [END bigtable_reads_row_range]
+}
+
+function bigtable_read_row_ranges($table)
+{
+    // [START bigtable_reads_row_ranges]
+    $rows = $table->readRows([
+        'rowRanges' => [
+            [
+                'startKeyClosed' => 'phone#4c410523#20190501',
+                'endKeyOpen' => 'phone#4c410523#201906201'
+            ],
+            [
+                'startKeyClosed' => 'phone#5c10102#20190501',
+                'endKeyOpen' => 'phone#5c10102#201906201'
+            ]
+        ]
+    ]);
+
+    foreach ($rows as $row) {
+        print_row($row);
+    }
+    // [END bigtable_reads_row_ranges]
+}
+
+function bigtable_read_prefix($table)
+{
+    // [START bigtable_reads_prefix]
+    $rows = $table->readRows([
+        'rowRanges' => [
+            [
+                'startKeyClosed' => 'phone#4c410523',
+            ]
+        ]
+    ]);
+
+    foreach ($rows as $row) {
+        print_row($row);
+    }
+    // [END bigtable_reads_prefix]
+}
+
+function bigtable_read_filter($table)
+{
+    // [START bigtable_reads_filter]
+    $rowFilter = Filter::value()->regex('PQ2A.*$');
+
+    $rows = $table->readRows([
+        'filter' => $rowFilter
+    ]);
+
+    foreach ($rows as $row) {
+        print_row($row);
+    }
+    // [END bigtable_reads_filter]
+}
+
+// Call the function for the supplied READ_TYPE
+$bigtableReadFunc = "bigtable_$readType";
+if (!function_exists($bigtableReadFunc)) {
+    throw new Exception('Invalid READ_TYPE: ' . $readType);
+}
+$bigtableReadFunc($table);
