@@ -30,6 +30,13 @@ if (count($argv) !== 5) {
 }
 list($_, $project_id, $instance_id, $table_id, $readType) = $argv;
 
+$validReadTypes = ['read_row', 'read_rows', 'read_row_range', 'read_row_ranges',
+    'read_prefix', 'read_filter', 'read_row_partial'];
+if (!in_array($readType, $validReadTypes)) {
+    throw new Exception(sprintf('Invalid READ_TYPE %s, must be one of: %s',
+        $readType, implode(', ', $validReadTypes)));
+}
+
 // [START bigtable_reads_row]
 // [START bigtable_reads_row_partial]
 // [START bigtable_reads_rows]
@@ -76,7 +83,7 @@ function print_row($row)
 // [END bigtable_reads_prefix]
 // [END bigtable_reads_filter]
 
-function bigtable_read_row($table)
+function read_row($table)
 {
     // [START bigtable_reads_row]
     $rowkey = "phone#4c410523#20190501";
@@ -86,7 +93,7 @@ function bigtable_read_row($table)
     // [END bigtable_reads_row]
 }
 
-function bigtable_read_row_partial($table)
+function read_row_partial($table)
 {
     // [START bigtable_reads_row_partial]
     $rowkey = "phone#4c410523#20190501";
@@ -97,7 +104,7 @@ function bigtable_read_row_partial($table)
     // [END bigtable_reads_row_partial]
 }
 
-function bigtable_read_rows($table)
+function read_rows($table)
 {
     // [START bigtable_reads_rows]
     $rows = $table->readRows(
@@ -110,7 +117,7 @@ function bigtable_read_rows($table)
     // [END bigtable_reads_rows]
 }
 
-function bigtable_read_row_range($table)
+function read_row_range($table)
 {
     // [START bigtable_reads_row_range]
     $rows = $table->readRows([
@@ -128,7 +135,7 @@ function bigtable_read_row_range($table)
     // [END bigtable_reads_row_range]
 }
 
-function bigtable_read_row_ranges($table)
+function read_row_ranges($table)
 {
     // [START bigtable_reads_row_ranges]
     $rows = $table->readRows([
@@ -150,7 +157,7 @@ function bigtable_read_row_ranges($table)
     // [END bigtable_reads_row_ranges]
 }
 
-function bigtable_read_prefix($table)
+function read_prefix($table)
 {
     // [START bigtable_reads_prefix]
     $rows = $table->readRows([
@@ -167,7 +174,7 @@ function bigtable_read_prefix($table)
     // [END bigtable_reads_prefix]
 }
 
-function bigtable_read_filter($table)
+function read_filter($table)
 {
     // [START bigtable_reads_filter]
     $rowFilter = Filter::value()->regex('PQ2A.*$');
@@ -183,8 +190,4 @@ function bigtable_read_filter($table)
 }
 
 // Call the function for the supplied READ_TYPE
-$bigtableReadFunc = "bigtable_$readType";
-if (!function_exists($bigtableReadFunc)) {
-    throw new Exception('Invalid READ_TYPE: ' . $readType);
-}
-$bigtableReadFunc($table);
+call_user_func($readType, $table);
