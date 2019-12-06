@@ -859,6 +859,4 @@ Column Family stats_summary
 
         $this->assertEquals($result, trim($output));
     }
-
-
 }

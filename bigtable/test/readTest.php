@@ -110,7 +110,6 @@ final class ReadTest extends TestCase
 //        self::$bigtableInstanceAdminClient->deleteInstance($instanceName);
         $tableName = self::$bigtableTableAdminClient->tableName(self::$projectId, self::$instanceId, self::$tableId);
         self::$bigtableTableAdminClient->deleteTable($tableName);
-
     }
 
     /**

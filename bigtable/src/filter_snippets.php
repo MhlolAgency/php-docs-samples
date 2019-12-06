@@ -302,7 +302,8 @@ function filter_composing_condition($table)
     $filter = Filter::condition(
         Filter::chain()
             ->addFilter(Filter::value()->exactMatch(unpack('C*', 1)))
-            ->addFilter(Filter::qualifier()->exactMatch("data_plan_10gb")))
+            ->addFilter(Filter::qualifier()->exactMatch("data_plan_10gb"))
+    )
         ->then(Filter::label("passed-filter"))
         ->otherwise(Filter::label("filtered-out"));
     read_filter($table, $filter);
