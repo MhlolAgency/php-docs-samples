@@ -50,12 +50,12 @@ final class ReadTest extends TestCase
 
         self::$bigtableInstanceAdminClient = new BigtableInstanceAdminClient();
         self::$bigtableTableAdminClient = new BigtableTableAdminClient();
-        self::$instanceId = 'central-instance';//uniqid(self::INSTANCE_ID_PREFIX);
-//        self::runSnippet('create_dev_instance', [
-//            self::$projectId,
-//            self::$instanceId,
-//            self::$instanceId,
-//        ]);
+        self::$instanceId = uniqid(self::INSTANCE_ID_PREFIX);
+        self::runSnippet('create_dev_instance', [
+            self::$projectId,
+            self::$instanceId,
+            self::$instanceId,
+        ]);
 
         self::$tableId = uniqid(self::TABLE_ID_PREFIX);
 
