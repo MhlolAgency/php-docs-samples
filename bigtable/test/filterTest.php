@@ -119,9 +119,7 @@ final class FilterTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         $instanceName = self::$bigtableInstanceAdminClient->instanceName(self::$projectId, self::$instanceId);
-//        self::$bigtableInstanceAdminClient->deleteInstance($instanceName);
-        $tableName = self::$bigtableTableAdminClient->tableName(self::$projectId, self::$instanceId, self::$tableId);
-        self::$bigtableTableAdminClient->deleteTable($tableName);
+        self::$bigtableInstanceAdminClient->deleteInstance($instanceName);
     }
 
 
